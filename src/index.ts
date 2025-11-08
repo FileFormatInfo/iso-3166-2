@@ -3,11 +3,14 @@ import "../node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css";
 
 import {
 	CellComponent,
+	DownloadModule,
 	EditModule,
+	ExportModule,
 	Filter,
 	FilterModule,
 	FormatModule,
 	InteractionModule,
+	MoveColumnsModule,
 	PopupModule,
 	ResizeColumnsModule,
 	ResizeTableModule,
@@ -118,7 +121,7 @@ async function main() {
 	console.log(data[0]);
 
 	const qs = new URLSearchParams(window.location.search);
-	const initialSort: Sorter[] = [ { column: "emoji", dir: "asc" } ];
+	const initialSort: Sorter[] = [ { column: "alpha_3_b", dir: "asc" } ];
 	const filters: Filter[] = [];
 	if (qs) {
 		;
@@ -137,10 +140,13 @@ async function main() {
 	}
 
 	Tabulator.registerModule([
+		DownloadModule,
 		EditModule,
+		ExportModule,
 		FilterModule,
 		FormatModule,
 		InteractionModule,
+		MoveColumnsModule,
 		PopupModule,
 		ResizeColumnsModule,
 		ResizeTableModule,
@@ -151,7 +157,6 @@ async function main() {
 
 	const table = new Tabulator("#datatable", {
 		autoResize: true,
-		data,
 		columns: [
 			{
 				cellClick: (e, cell) => {
@@ -219,15 +224,23 @@ async function main() {
 				width: 375,
 			},
 		],
+		data,
+		downloadEncoder:function(fileContents, mimeType){
+	        return new Blob([fileContents], {type:"text/plain;charset=utf-8"});
+		},
 		height: "100%",
 		initialHeaderFilter: filters,
 		initialSort,
 		layout: "fitDataStretch",
+		movableColumns: true,
 		placeholder: "No matches",
 		responsiveLayout: "hide",
 		footerElement: `<span class="w-100 mx-2 my-1">
 				<a href="https://www.fileformat.info/"><img id="favicon" src="/favicon.svg" class="pe-2 mb-1" style="height:1.5em;" alt="FileFormat.Info logo"/></a><span class="fw-bold">ISO 639-2</span>
 				<span id="rowcount" class="px-3">Rows: ${data.length.toLocaleString()}</span>
+				<span class="d-none d-md-inline">
+					<a class="px-1" id="download">Download \u279A</a>
+				</span>
 				<a class="d-none d-lg-block float-end" href="https://github.com/FileFormatInfo/iso-639-2">Source</a>
 			</span>`,
 	});
@@ -254,6 +267,14 @@ async function main() {
 		qs.set("sort", sorters[0]?.column.getField());
 		qs.set("dir", sorters[0]?.dir);
 		window.history.replaceState(null, "", "?" + qs);
+	});
+	table.on("tableBuilt", function () {
+		console.log("INFO: table built");
+		document.getElementById("download")!.addEventListener("click", (e) => {
+			e.preventDefault();
+			console.log("INFO: download clicked");
+			table.downloadToTab("csv", "iso-639-2.csv", {});
+		});
 	});
 
 	document.getElementById("loading")!.classList.add("d-none");
