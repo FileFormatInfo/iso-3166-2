@@ -1,8 +1,8 @@
 #
-# robots.txt for iso-639-3.fileformat.info
+# robots.txt for iso-4217.fileformat.info
 #
 
-Sitemap: https://iso-639-3.fileformat.info/sitemap.xml
+Sitemap: https://iso-4217.fileformat.info/sitemap.xml
 
 User-agent: *
 Disallow: /honeypot.txt

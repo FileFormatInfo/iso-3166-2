@@ -222,7 +222,7 @@ async function main() {
 		}
 		rawData = (await resp.json() as SearchData);
 	} catch (error) {
-		showError(`Error fetching ISO 639-3 data: ${error}`);
+		showError(`Error fetching ISO 4217 data: ${error}`);
 		return;
 	}
 
@@ -405,7 +405,7 @@ async function main() {
 		document.getElementById("download")!.addEventListener("click", (e) => {
 			e.preventDefault();
 			console.log("INFO: download clicked");
-			table.downloadToTab("csv", "iso-639-3.csv", {});
+			table.downloadToTab("csv", "iso-4217.csv", {});
 		});
 	});
 

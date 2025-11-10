@@ -1,6 +1,6 @@
 {
   "author": "fileformat@gmail.com",
-  "description": "ISO 639-3 Data Browser",
+  "description": "ISO 4217 Data Browser",
   "devDependencies": {
     "@types/node": "^24.3.1",
     "@types/tabulator-tables": "^6.3.0",

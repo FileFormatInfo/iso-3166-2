@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Download and unzip the ISO 639-3 file from SIL.
+# Download and unzip the ISO 4217 file from Six Group.
 #
 
 set -o nounset
