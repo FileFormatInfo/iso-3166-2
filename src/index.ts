@@ -23,14 +23,11 @@ import {
 
 type SearchEntry = {
 	alpha_3: string;
-	alpha_3_b: string;
-	alpha_3_t: string;
-	alpha_2: string;
-	name_ref: string;
-	comment?: string;
-	tags: string[];
-	parent?: string;
-	children?: string[];
+	numeric: string;
+	name: string;
+	countries: string[];
+	subunit: number;
+	is_fund: boolean;
 	active: boolean;
 };
 
@@ -39,7 +36,7 @@ type SearchData = {
 	data: SearchEntry[];
 };
 
-const dataUrl = "/iso-639-3.json";
+const dataUrl = "/iso-4217.json";
 
 
 
@@ -298,66 +295,62 @@ async function main() {
 				width: 150,
 			},
 			{
-				field: "alpha_3_b",
-				formatter: (cell: CellComponent) => {
-					let value = cell.getValue();
-					if (value === "") {
-						return value;
-					}
-					const t_value = cell.getRow().getData().alpha_3_t;
-					if (!t_value || t_value === value) {
-						return value;
-					}
-					return `${value}/${t_value}`;
+				field: "numeric",
+				headerFilter: "input",
+				headerFilterFunc: filterRegex,
+				headerHozAlign: "center",
+				hozAlign: "center",
+				responsive: 10,
+				title: "Numeric",
+				titleDownload: "numeric",
+				width: 150,
+			},
+			{
+				field: "subunit",
+				headerFilter: "input",
+				headerFilterFunc: filterRegex,
+				headerHozAlign: "center",
+				hozAlign: "center",
+				responsive: 0,
+				title: "# Decimals",
+				titleDownload: "subunit",
+				width: 150,
+			},
+			{
+				field: "is_fund",
+				formatter: "tickCross",
+				formatterParams: {
+					allowEmpty: true,
+					crossElement: false,
 				},
-				headerFilter: "input",
-				headerFilterFunc: filterRegex,
+				headerFilter: "tickCross",
+				headerFilterParams: {
+					tristate: true,
+				},
 				headerHozAlign: "center",
 				hozAlign: "center",
-				responsive: 0,
-				title: "639-2",
-				titleDownload: "alpha_3_b/t",
-				width: 150,
+				responsive: 20,
+				title: "Is Fund?",
+				titleDownload: "is_fund",
+				width: 125,
 			},
 			{
-				field: "alpha_2",
+				field: "name",
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
-				headerHozAlign: "center",
-				hozAlign: "center",
 				responsive: 10,
-				title: "Alpha-2",
-				titleDownload: "alpha_2",
-				width: 150,
-			},
-			{
-				field: "parent",
-				headerFilter: "input",
-				headerFilterFunc: filterRegex,
-				headerHozAlign: "center",
-				hozAlign: "center",
-				responsive: 10,
-				title: "Parent",
-				titleDownload: "parent",
-				width: 150,
-			},
-			{
-				field: "name_ref",
-				headerFilter: "input",
-				headerFilterFunc: filterRegex,
-				responsive: 0,
 				title: "Name",
-				titleDownload: "name_ref",
-				width: 375,
+				titleDownload: "name",
+				width: 250,
 			},
 			{
 				download: false,
-				field: "tags",
-				formatter: fmtTags,
+				field: "countries",
+				formatter: (cell) => cell.getValue().join(", "),
 				headerFilter: "input",
 				headerFilterFunc: filterTags,
 				responsive: 0,
-				title: "Tags & Comments",
+				title: "Countries",
 				width: 375,
 			},
 		],
@@ -375,12 +368,12 @@ async function main() {
 		placeholder: "No matches",
 		responsiveLayout: "hide",
 		footerElement: `<span class="w-100 mx-2 my-1">
-				<a href="https://www.fileformat.info/"><img id="favicon" src="/favicon.svg" class="pe-2 mb-1" style="height:1.5em;" alt="FileFormat.Info logo"/></a><span class="fw-bold">ISO 639-3</span>
+				<a href="https://www.fileformat.info/"><img id="favicon" src="/favicon.svg" class="pe-2 mb-1" style="height:1.5em;" alt="FileFormat.Info logo"/></a><span class="fw-bold">ISO 4217</span>
 				<span id="rowcount" class="px-3">Rows: ${data.length.toLocaleString()}</span>
 				<span class="d-none d-md-inline">
-					Download: <a href="/iso-639-3.json">JSON</a> <a class="px-1" id="download">CSV</a>
+					Download: <a href="/iso-4217.json">JSON</a> <a class="px-1" id="download">CSV</a>
 				</span>
-				<a class="d-none d-lg-block float-end" href="https://github.com/FileFormatInfo/iso-639-3">Source</a>
+				<a class="d-none d-lg-block float-end" href="https://github.com/FileFormatInfo/iso-4217">Source</a>
 			</span>`,
 	});
 

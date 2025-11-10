@@ -1,24 +1,23 @@
-# ISO 639-3 Data Browser <img alt="Languages icon" src="public/favicon.svg" height="90" align="right" />
+# ISO 4217 Currencies Data Browser <img alt="Languages icon" src="public/favicon.svg" height="90" align="right" />
 
-[![deploy](https://github.com/FileFormatInfo/iso-639-3/actions/workflows/ghpages-deploy.yaml/badge.svg)](https://github.com/FileFormatInfo/iso-639-3/actions/workflows/ghpages-deploy.yaml)
-[![languages](https://img.shields.io/badge/dynamic/json.svg?label=languages&url=https%3A%2F%2Fiso-639-3.fileformat.info%2Fstatus.json&query=%24.datacount)](https://iso-639-3.fileformat.info/)
+[![deploy](https://github.com/FileFormatInfo/iso-4217/actions/workflows/ghpages-deploy.yaml/badge.svg)](https://github.com/FileFormatInfo/iso-4217/actions/workflows/ghpages-deploy.yaml)
+[![currencies](https://img.shields.io/badge/dynamic/json.svg?label=currencies&url=https%3A%2F%2Fiso-4217.fileformat.info%2Fstatus.json&query=%24.datacount)](https://iso-4217.fileformat.info/)
 [![Status](https://img.shields.io/nodeping/status/HTNQIEP0-UC75-4KRL-8WIN-BDSINV1CORZE.svg?style=flat)](https://nodeping.com/reports/checks/HTNQIEP0-UC75-4KRL-8WIN-BDSINV1CORZE)
 
-A web app for searching and browsing the ISO 639-3 Languages database.
+A web app for searching and browsing the ISO 4217 Currencies database.
 
-See it in action: [iso-639-3.fileformat.info](https://iso-639-3.fileformat.info/)
+See it in action: [iso-4217.fileformat.info](https://iso-4217.fileformat.info/)
 
 ## Links
 
-- [SIL 639-3 Page](https://iso639-3.sil.org/about)
-- [SIL downloads](https://iso639-3.sil.org/code_tables/download_tables)
+- [Six Group downloads](https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html)
+- [Wikipedia ISO 4217 Page](https://en.wikipedia.org/wiki/ISO_4217)
 
 ## Credits
 
 [![Bootstrap](https://www.vectorlogo.zone/logos/getbootstrap/getbootstrap-ar21.svg)](https://getbootstrap.com/ "HTML/CSS Framework")
 [![Git](https://www.vectorlogo.zone/logos/git-scm/git-scm-ar21.svg)](https://git-scm.com/ "Version control")
 [![Github](https://www.vectorlogo.zone/logos/github/github-ar21.svg)](https://gitlab.com/ "Code hosting")
-[![Library of Congress](https://www.vectorlogo.zone/logos/loc/loc-ar21.svg)](https://www.loc.gov/ "Data source")
 [![Node.js](https://www.vectorlogo.zone/logos/nodejs/nodejs-ar21.svg)](https://nodejs.org/ "Application Server")
 [![npm](https://www.vectorlogo.zone/logos/npmjs/npmjs-ar21.svg)](https://www.npmjs.com/ "JS Package Management")
 [![Tabulator](https://www.vectorlogo.zone/logos/tabulatorinfo/tabulatorinfo-ar21.svg)](https://tabulator.info/ "Grid widget")

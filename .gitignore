@@ -4,7 +4,7 @@ dist
 *.env
 *.log
 node_modules
-public/iso-639-3.json
+public/iso-4217.json
 tmp
 *.tmp
 
