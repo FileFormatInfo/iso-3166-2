@@ -2,7 +2,7 @@
 
 [![deploy](https://github.com/FileFormatInfo/iso-4217/actions/workflows/ghpages-deploy.yaml/badge.svg)](https://github.com/FileFormatInfo/iso-4217/actions/workflows/ghpages-deploy.yaml)
 [![currencies](https://img.shields.io/badge/dynamic/json.svg?label=currencies&url=https%3A%2F%2Fiso-4217.fileformat.info%2Fstatus.json&query=%24.datacount)](https://iso-4217.fileformat.info/)
-[![Status](https://img.shields.io/nodeping/status/HTNQIEP0-UC75-4KRL-8WIN-BDSINV1CORZE.svg?style=flat)](https://nodeping.com/reports/checks/HTNQIEP0-UC75-4KRL-8WIN-BDSINV1CORZE)
+[![Status](https://img.shields.io/nodeping/status/BNS8BXQX-FIS3-4ORQ-87JX-JKQELP1RI4OV.svg?style=flat)](https://nodeping.com/reports/checks/BNS8BXQX-FIS3-4ORQ-87JX-JKQELP1RI4OV)
 
 A web app for searching and browsing the ISO 4217 Currencies database.
 
