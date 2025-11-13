@@ -22,6 +22,7 @@ import {
 } from "tabulator-tables";
 
 type SearchEntry = {
+	flag?: string;
 	alpha_2: string;
 	alpha_3: string;
 	numeric: string;
@@ -119,6 +120,12 @@ function filterTags(
 	}
 	return true;
 }
+
+// from https://stackoverflow.com/a/30451878
+function toFlag(alpha2: string): string {
+    return String.fromCodePoint(127397 + alpha2.charCodeAt(0), 127397 + alpha2.charCodeAt(1));
+}
+
 
 function fmtTags(cell: CellComponent) {
 	const tags = cell.getValue() as string[];
@@ -229,6 +236,10 @@ async function main() {
 
 	const data = rawData.data;
 
+	for (const entry of data) {
+		entry.flag = toFlag(entry.alpha_2);
+	}
+
 	console.log(data[0]);
 
 	const qs = new URLSearchParams(window.location.search);
@@ -284,6 +295,16 @@ async function main() {
 					`<img src="/images/icons/clipboard.svg" alt="Copy to clipboard" height="16">`,
 				headerSort: false,
 				title: "",
+			},
+			{
+				cssClass: 'fs-2 py-0',
+				download: false,
+				field: 'flag',
+				headerSort: false,
+				hozAlign: 'center',
+				responsive: 0,
+				title: '',
+				width: 75,
 			},
 			{
 				field: "alpha_2",
