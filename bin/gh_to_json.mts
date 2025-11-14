@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import path from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,16 +30,13 @@ type CountryEntry = {
 	unMember: boolean;
 };
 
-
-
 type SearchEntry = {
 	alpha_2: string;
 	alpha_3: string;
 	numeric: string;
 	common_name_en: string;
-	common_name_local: string;
 	official_name_en: string;
-	official_name_local: string;
+	name_local: { alpha3: string; common: string; official: string }[];
 	independent: boolean;
 	un_member: boolean;
 	tlds: string[];
@@ -49,15 +46,15 @@ type SearchData = {
 	success: boolean;
 	lastmod: string;
 	data: SearchEntry[];
-}
+};
 
-const entryMap: { [key:string]:SearchEntry } = {};
+const entryMap: { [key: string]: SearchEntry } = {};
 
 async function main() {
 	console.log(`INFO: starting at ${new Date().toISOString()}`);
 
-	const countryPath = path.join( __dirname, '..', 'tmp', 'countries.json' );
-	const jsonPath = path.join( __dirname, '..', 'public', 'iso-3166-1.json' );
+	const countryPath = path.join(__dirname, "..", "tmp", "countries.json");
+	const jsonPath = path.join(__dirname, "..", "public", "iso-3166-1.json");
 
 	try {
 		await fs.access(countryPath);
@@ -71,16 +68,19 @@ async function main() {
 	console.log(`INFO: reading list-one data file from ${countryPath}`);
 	const countryText = (await fs.readFile(countryPath, "utf-8")).trim();
 
-	const countryData = JSON.parse(countryText);
+	const countryData = JSON.parse(countryText) as CountryEntry[];
 	for (const entry of countryData) {
 		const newEntry: SearchEntry = {
 			alpha_2: entry.cca2,
 			alpha_3: entry.cca3,
 			numeric: entry.ccn3,
 			common_name_en: entry.name.common,
-			common_name_local: Object.values(entry.name.native)[0]?.common || entry.name.common,
 			official_name_en: entry.name.official,
-			official_name_local: Object.values(entry.name.native)[0]?.official || entry.name.official,
+			name_local: Object.entries(entry.name.native).map(([key, val]) => ({
+				alpha3: key,
+				common: val.common,
+				official: val.official,
+			})),
 			independent: entry.independent,
 			un_member: entry.unMember,
 			tlds: entry.tld,
@@ -89,7 +89,7 @@ async function main() {
 	}
 
 	const data = Object.values(entryMap);
-	data.sort( (a, b) => a.alpha_2.localeCompare(b.alpha_2) );
+	data.sort((a, b) => a.alpha_2.localeCompare(b.alpha_2));
 
 	const output: SearchData = {
 		success: true,
@@ -99,10 +99,10 @@ async function main() {
 
 	// Write the JSON data to a file
 	console.log(`INFO: writing ${data.length} items to ${jsonPath}`);
-	await fs.writeFile(jsonPath, JSON.stringify(output, null, 2), 'utf-8');
+	await fs.writeFile(jsonPath, JSON.stringify(output, null, 2), "utf-8");
 	console.log(`INFO: wrote JSON data to ${jsonPath}`);
 }
 
-main().then( () => {
+main().then(() => {
 	console.log(`INFO: complete at ${new Date().toISOString()}`);
 });

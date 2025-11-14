@@ -27,9 +27,8 @@ type SearchEntry = {
 	alpha_3: string;
 	numeric: string;
 	common_name_en: string;
-	common_name_local: string;
 	official_name_en: string;
-	official_name_local: string;
+	name_local: { alpha3: string; common: string; official: string }[];
 	independent: boolean;
 	un_member: boolean;
 	tlds: string[];
@@ -126,6 +125,41 @@ function toFlag(alpha2: string): string {
     return String.fromCodePoint(127397 + alpha2.charCodeAt(0), 127397 + alpha2.charCodeAt(1));
 }
 
+function fmtNameEn(cell: CellComponent) {
+	const name = cell.getValue() as string;
+	const officialName = cell.getRow().getData().official_name_en as string | undefined;
+	if (!officialName || officialName == name) {
+		return name;
+	}
+	const el = document.createElement("abbr");
+	el.title = officialName;
+	el.textContent = name;
+	return el;
+}
+
+function fmtNameLocal(cell: CellComponent) {
+	const names = cell.getValue() as { alpha3: string; common: string; official: string }[];
+	if (!names || names.length == 0) {
+		return "";
+	}
+	const container = document.createElement("span");
+	for (const nameObj of names) {
+		const name = nameObj.official;
+		const name2 = nameObj.common;
+		if (name2 && name2 != name) {
+			const el = document.createElement("abbr");
+			el.title = name2;
+			el.textContent = name;
+			container.appendChild(el);
+			const el2 = document.createTextNode(` (${nameObj.alpha3})\u00A0\u00A0`);
+			container.appendChild(el2);
+		} else {
+			const el2 = document.createTextNode(` ${name} (${nameObj.alpha3})\u00A0\u00A0`);
+			container.appendChild(el2);
+		}
+	}
+	return container;
+}
 
 function fmtTags(cell: CellComponent) {
 	const tags = cell.getValue() as string[];
@@ -387,6 +421,7 @@ async function main() {
 			},
 			{
 				field: "common_name_en",
+				formatter: fmtNameEn,
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				responsive: 10,
@@ -395,7 +430,8 @@ async function main() {
 				width: 250,
 			},
 			{
-				field: "common_name_local",
+				field: "name_local",
+				formatter: fmtNameLocal,
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				responsive: 10,
