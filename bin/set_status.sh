@@ -27,7 +27,7 @@ STATUS_FILE="${BASE_DIR}/public/status.json"
 LASTMOD=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 TECH="NodeJS $(node --version)"
 COMMIT=$(git -C "${BASE_DIR}" rev-parse --short HEAD)
-DATACOUNT=$(cat "${BASE_DIR}/public/iso-3166-1.json" | jq '.data | length')
+DATACOUNT=$(cat "${BASE_DIR}/public/iso-3166-2.json" | jq '.data | length')
 
 echo "INFO: updating status file ${STATUS_FILE}"
 

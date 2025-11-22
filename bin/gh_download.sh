@@ -20,12 +20,12 @@ else
 	echo "INFO: using existing temp dir ${TMP_DIR}"
 fi
 
-echo "INFO: downloading countries.json from Github"
+echo "INFO: downloading iso3166_2.json from Github"
 curl \
 	--location \
-	--output "${TMP_DIR}/countries.json" \
+	--output "${TMP_DIR}/iso3166_2.json" \
 	--show-error \
 	--silent \
-	https://raw.githubusercontent.com/mledoze/countries/refs/heads/master/countries.json
+	https://raw.githubusercontent.com/amckenna41/iso3166-2/refs/heads/main/iso3166_2/iso3166-2.json
 
 echo "INFO: completed gh download at $(date -u +"%Y-%m-%dT%H:%M:%SZ")"

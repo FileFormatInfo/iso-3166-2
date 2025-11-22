@@ -7,39 +7,31 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-type NameWithFund = {
-	"+content": string;
-	"+@IsFund": string;
+type CountryData = { [key:string]: CountryEntry };
+
+type CountryEntry = { [key:string] : SubdivisionEntry };
+
+type SubdivisionEntry = {
+	name: string;
+	localOtherName: string;
+	type: string;
+	parentCode: string|null;
+	flag: string;
+	latLng: [number, number];
+	history: string;
 };
 
-type CountryEntry = {
-	name: {
-		common: string;
-		official: string;
-		native: { [key: string]: {
-				common: string;
-				official: string;
-			}
-		}
-	};
-	tld: string[];
-	cca2: string;
-	cca3: string;
-	ccn3: string;
-	independent: boolean;
-	unMember: boolean;
-};
+type AltName = {
+	name: string;
+	lang: string;
+}
 
 type SearchEntry = {
-	alpha_2: string;
-	alpha_3: string;
-	numeric: string;
-	common_name_en: string;
-	official_name_en: string;
-	name_local: { alpha3: string; common: string; official: string }[];
-	independent: boolean;
-	un_member: boolean;
-	tlds: string[];
+	country: string;
+	code: string;
+	name: string;
+	alt_names?: AltName[];
+	flag: string;
 };
 
 type SearchData = {
@@ -50,46 +42,101 @@ type SearchData = {
 
 const entryMap: { [key: string]: SearchEntry } = {};
 
+function readNextName(s: string): [string, string] {
+	s = s.trim();
+	if (s.startsWith("'")) {
+		// quoted name
+		const endIdx = s.indexOf("',");
+		if (endIdx === -1) {
+			return [s.slice(1, -1).trim(), ""];
+		}
+		const name = s.slice(1, endIdx).trim();
+		const rest = s.slice(endIdx + 2).trim();
+		return [name, rest];
+	} else {
+		// unquoted name
+		const endIdx = s.indexOf(",");
+		if (endIdx === -1) {
+			return [s.trim(), ""];
+		}
+		const name = s.slice(0, endIdx).trim();
+		const rest = s.slice(endIdx + 1).trim();
+		return [name, rest];
+	}
+}
+
+function parseAltNames(altNameStr: string): AltName[]|undefined {
+	if (!altNameStr || altNameStr.trim().length === 0) {
+		return undefined;
+	}
+	const altNames: AltName[] = [];
+
+	let rest = altNameStr.trim();
+	while (rest.length > 0) {
+		// Read name
+		const [name, afterName] = readNextName(rest);
+		rest = afterName;
+
+		const m = name.match(/^(.+) \((.+)\)$/);
+		if (!m) {
+			console.log(`WARN: alt name "${name}" is not in expected format`);
+			continue;
+		}
+		altNames.push({
+			name: m[1].trim().replace(/\u200e/g, ""),
+			lang: m[2].trim(),
+		});
+	}
+
+	return altNames.length > 0 ? altNames : undefined;
+}
+
 async function main() {
 	console.log(`INFO: starting at ${new Date().toISOString()}`);
 
-	const countryPath = path.join(__dirname, "..", "tmp", "countries.json");
-	const jsonPath = path.join(__dirname, "..", "public", "iso-3166-1.json");
+	const dataPath = path.join(__dirname, "..", "tmp", "iso3166_2.json");
+	const jsonPath = path.join(__dirname, "..", "public", "iso-3166-2.json");
 
 	try {
-		await fs.access(countryPath);
+		await fs.access(dataPath);
 	} catch (err) {
 		console.log(
-			`INFO: list-one data file does not exist in ${countryPath}`
+			`INFO: subdivision data file does not exist in ${dataPath}`
 		);
 		process.exit(1);
 	}
 
-	console.log(`INFO: reading list-one data file from ${countryPath}`);
-	const countryText = (await fs.readFile(countryPath, "utf-8")).trim();
+	console.log(`INFO: reading subdivision data file from ${dataPath}`);
+	const countryText = (await fs.readFile(dataPath, "utf-8")).trim();
 
-	const countryData = JSON.parse(countryText) as CountryEntry[];
-	for (const entry of countryData) {
-		const newEntry: SearchEntry = {
-			alpha_2: entry.cca2,
-			alpha_3: entry.cca3,
-			numeric: entry.ccn3,
-			common_name_en: entry.name.common,
-			official_name_en: entry.name.official,
-			name_local: Object.entries(entry.name.native).map(([key, val]) => ({
-				alpha3: key,
-				common: val.common,
-				official: val.official,
-			})),
-			independent: entry.independent,
-			un_member: entry.unMember,
-			tlds: entry.tld,
-		};
-		entryMap[entry.cca3] = newEntry;
+	const countryData = JSON.parse(countryText) as CountryData;
+	for (const country of Object.keys(countryData)) {
+		const countryEntry = countryData[country];
+		if (!countryEntry) {
+			console.log(`ERROR: missing country entry for ${country}`);
+			continue;
+		}
+		for (const subdivisionCode of Object.keys(countryEntry)) {
+			const subdivision = countryEntry[subdivisionCode];
+			if (!subdivision) {
+				console.log(
+					`ERROR: missing subdivision entry for ${subdivisionCode} in country ${country}`
+				);
+				continue;
+			}
+			const newEntry: SearchEntry = {
+				country,
+				code: subdivisionCode,
+				name: subdivision.name,
+				alt_names: parseAltNames(subdivision.localOtherName),
+				flag: subdivision.flag,
+			};
+			entryMap[subdivisionCode] = newEntry;
+		}
 	}
 
 	const data = Object.values(entryMap);
-	data.sort((a, b) => a.alpha_2.localeCompare(b.alpha_2));
+	data.sort((a, b) => a.code.localeCompare(b.code));
 
 	const output: SearchData = {
 		success: true,

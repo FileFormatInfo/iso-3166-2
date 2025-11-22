@@ -1,6 +1,6 @@
 {
   "author": "fileformat@gmail.com",
-  "description": "ISO 3166-1 Countries Data Browser",
+  "description": "ISO 3166-2 Country Subdivision Data Browser",
   "devDependencies": {
     "@types/node": "^24.3.1",
     "@types/tabulator-tables": "^6.3.0",

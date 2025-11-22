@@ -1,8 +1,8 @@
 #
-# robots.txt for iso-3166-1.fileformat.info
+# robots.txt for iso-3166-2.fileformat.info
 #
 
-Sitemap: https://iso-3166-1.fileformat.info/sitemap.xml
+Sitemap: https://iso-3166-2.fileformat.info/sitemap.xml
 
 User-agent: *
 Disallow: /honeypot.txt

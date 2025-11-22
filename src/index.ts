@@ -21,17 +21,17 @@ import {
 	TooltipModule,
 } from "tabulator-tables";
 
+type AltName = {
+	name: string;
+	lang: string;
+};
+
 type SearchEntry = {
-	flag?: string;
-	alpha_2: string;
-	alpha_3: string;
-	numeric: string;
-	common_name_en: string;
-	official_name_en: string;
-	name_local: { alpha3: string; common: string; official: string }[];
-	independent: boolean;
-	un_member: boolean;
-	tlds: string[];
+	country: string;
+	code: string;
+	name: string;
+	alt_names?: AltName[];
+	flag: string;
 };
 
 type SearchData = {
@@ -39,7 +39,7 @@ type SearchData = {
 	data: SearchEntry[];
 };
 
-const dataUrl = "/iso-3166-1.json";
+const dataUrl = "/iso-3166-2.json";
 
 function filterRegex(
 	headerValue: string,
@@ -121,44 +121,33 @@ function filterTags(
 }
 
 // from https://stackoverflow.com/a/30451878
-function toFlag(alpha2: string): string {
-    return String.fromCodePoint(127397 + alpha2.charCodeAt(0), 127397 + alpha2.charCodeAt(1));
-}
-
-function fmtNameEn(cell: CellComponent) {
-	const name = cell.getValue() as string;
-	const officialName = cell.getRow().getData().official_name_en as string | undefined;
-	if (!officialName || officialName == name) {
-		return name;
+function fmtCountryFlag(cell: CellComponent): string {
+	const alpha2 = cell.getValue() as string;
+	if (!alpha2 || alpha2.length != 2) {
+		return "";
 	}
-	const el = document.createElement("abbr");
-	el.title = officialName;
-	el.textContent = name;
-	return el;
+	return String.fromCodePoint(
+		127397 + alpha2.charCodeAt(0),
+		127397 + alpha2.charCodeAt(1)
+	);
 }
 
-function fmtNameLocal(cell: CellComponent) {
-	const names = cell.getValue() as { alpha3: string; common: string; official: string }[];
+function fmtAltNames(cell: CellComponent) {
+	const names = cell.getValue() as AltName[];
 	if (!names || names.length == 0) {
 		return "";
 	}
-	const container = document.createElement("span");
-	for (const nameObj of names) {
-		const name = nameObj.official;
-		const name2 = nameObj.common;
-		if (name2 && name2 != name) {
-			const el = document.createElement("abbr");
-			el.title = name2;
-			el.textContent = name;
-			container.appendChild(el);
-			const el2 = document.createTextNode(` (${nameObj.alpha3})\u00A0\u00A0`);
-			container.appendChild(el2);
-		} else {
-			const el2 = document.createTextNode(` ${name} (${nameObj.alpha3})\u00A0\u00A0`);
-			container.appendChild(el2);
-		}
+
+	return names.map((n) => `${n.name} (${n.lang})`).join(", ");
+}
+
+function fmtFlagImage(cell: CellComponent) {
+	const flagUrl = cell.getValue() as string;
+	if (!flagUrl || flagUrl.length == 0) {
+		return "";
 	}
-	return container;
+
+	return `<a href="${flagUrl}"><img src="${flagUrl}" alt="Flag" style="height:1.0em;"/></a>`;
 }
 
 function fmtTags(cell: CellComponent) {
@@ -258,26 +247,22 @@ async function main() {
 		});
 		if (!resp.ok) {
 			showError(
-				`HTTP Error fetching logo data: ${resp.status} ${resp.statusText}`
+				`HTTP Error fetching subdivision data: ${resp.status} ${resp.statusText}`
 			);
 			return;
 		}
 		rawData = (await resp.json() as SearchData);
 	} catch (error) {
-		showError(`Error fetching ISO 3166-1 data: ${error}`);
+		showError(`Error fetching ISO 3166-2 data: ${error}`);
 		return;
 	}
 
 	const data = rawData.data;
 
-	for (const entry of data) {
-		entry.flag = toFlag(entry.alpha_2);
-	}
-
 	console.log(data[0]);
 
 	const qs = new URLSearchParams(window.location.search);
-	const initialSort: Sorter[] = [ { column: "alpha_2", dir: "asc" } ];
+	const initialSort: Sorter[] = [ { column: "code", dir: "asc" } ];
 	const filters: Filter[] = [];
 	if (qs) {
 		;
@@ -320,9 +305,9 @@ async function main() {
 					const data = cell.getRow().getData();
 					e.preventDefault();
 					e.stopPropagation();
-					table.alert(`${data.alpha_3} copied to clipboard`);
+					table.alert(`${data.code} copied to clipboard`);
 					setTimeout(() => table.clearAlert(), 1000);
-					navigator.clipboard.writeText(data.emoji);
+					navigator.clipboard.writeText(data.code);
 				},
 				field: "",
 				formatter: () =>
@@ -331,112 +316,67 @@ async function main() {
 				title: "",
 			},
 			{
-				cssClass: 'fs-2 py-0',
+				cssClass: "fs-2 py-0",
 				download: false,
-				field: 'flag',
+				field: "country",
+				formatter: fmtCountryFlag,
 				headerSort: false,
-				hozAlign: 'center',
+				hozAlign: "center",
 				responsive: 0,
-				title: '',
+				title: "",
 				width: 75,
 			},
 			{
-				field: "alpha_2",
+				field: "country",
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				headerHozAlign: "center",
 				hozAlign: "center",
 				responsive: 0,
-				title: "Alpha-2",
-				titleDownload: "alpha_2",
+				title: "Country",
+				titleDownload: "iso_3166_1",
 				width: 150,
 			},
 			{
-				field: "alpha_3",
+				cssClass: "fs-2 py-0",
+				field: "flag",
+				formatter: fmtFlagImage,
+				headerHozAlign: "center",
+				headerSort: false,
+				hozAlign: "center",
+				responsive: 0,
+				title: "",
+				titleDownload: "iso_3166_1",
+				width: 150,
+			},
+			{
+				field: "code",
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				headerHozAlign: "center",
 				hozAlign: "center",
 				responsive: 0,
-				title: "Alpha-3",
-				titleDownload: "alpha_3",
+				title: "ISO 3166-2",
+				titleDownload: "iso_3166_2",
 				width: 150,
 			},
 			{
-				field: "numeric",
-				headerFilter: "input",
-				headerFilterFunc: filterRegex,
-				headerHozAlign: "center",
-				hozAlign: "center",
-				responsive: 10,
-				title: "Numeric",
-				titleDownload: "numeric",
-				width: 150,
-			},
-			{
-				field: "tlds",
-				formatter: (cell) => cell.getValue().join(", "),
-				headerFilter: "input",
-				headerFilterFunc: filterTags,
-				responsive: 5,
-				title: "TLDs",
-				titleDownload: "tlds",
-				width: 200,
-			},
-			{
-				field: "un_member",
-				formatter: "tickCross",
-				formatterParams: {
-					allowEmpty: true,
-					crossElement: false,
-				},
-				headerFilter: "tickCross",
-				headerFilterParams: {
-					tristate: true,
-				},
-				headerHozAlign: "center",
-				hozAlign: "center",
-				responsive: 20,
-				title: "UN Member",
-				titleDownload: "un_member",
-				width: 125,
-			},
-			{
-				field: "independent",
-				formatter: "tickCross",
-				formatterParams: {
-					allowEmpty: true,
-					crossElement: false,
-				},
-				headerFilter: "tickCross",
-				headerFilterParams: {
-					tristate: true,
-				},
-				headerHozAlign: "center",
-				hozAlign: "center",
-				responsive: 20,
-				title: "Independent",
-				titleDownload: "independent",
-				width: 125,
-			},
-			{
-				field: "common_name_en",
-				formatter: fmtNameEn,
+				field: "name",
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				responsive: 10,
-				title: "Name (English)",
-				titleDownload: "name_en",
+				title: "Name",
+				titleDownload: "name",
 				width: 250,
 			},
 			{
-				field: "name_local",
-				formatter: fmtNameLocal,
+				field: "alt_names",
+				formatter: fmtAltNames,
 				headerFilter: "input",
 				headerFilterFunc: filterRegex,
 				responsive: 10,
-				title: "Name (Local)",
-				titleDownload: "name_local",
+				title: "Also known as",
+				titleDownload: "alt_names",
 				width: 250,
 			},
 		],
@@ -454,12 +394,12 @@ async function main() {
 		placeholder: "No matches",
 		responsiveLayout: "hide",
 		footerElement: `<span class="w-100 mx-2 my-1">
-				<a href="https://www.fileformat.info/"><img id="favicon" src="/favicon.svg" class="pe-2 mb-1" style="height:1.5em;" alt="FileFormat.Info logo"/></a><span class="fw-bold">ISO 3166-1</span>
+				<a href="https://www.fileformat.info/"><img id="favicon" src="/favicon.svg" class="pe-2 mb-1" style="height:1.5em;" alt="FileFormat.Info logo"/></a><span class="fw-bold">ISO 3166-2</span>
 				<span id="rowcount" class="px-3">Rows: ${data.length.toLocaleString()}</span>
 				<span class="d-none d-md-inline">
-					Download: <a href="/iso-3166-1.json">JSON</a> <a class="px-1" id="download">CSV</a>
+					Download: <a href="/iso-3166-2.json">JSON</a> <a class="px-1" id="download">CSV</a>
 				</span>
-				<a class="d-none d-lg-block float-end" href="https://github.com/FileFormatInfo/iso-3166-1">Source</a>
+				<a class="d-none d-lg-block float-end" href="https://github.com/FileFormatInfo/iso-3166-2">Source</a>
 			</span>`,
 	});
 
@@ -491,7 +431,7 @@ async function main() {
 		document.getElementById("download")!.addEventListener("click", (e) => {
 			e.preventDefault();
 			console.log("INFO: download clicked");
-			table.downloadToTab("csv", "iso-3166-1.csv", {});
+			table.downloadToTab("csv", "iso-3166-2.csv", {});
 		});
 	});
 
