@@ -41,6 +41,28 @@ type SearchData = {
 
 const dataUrl = "/iso-3166-2.json";
 
+function codeFilter(
+	headerValue: string,
+	rowValue: string,
+	rowData: any,
+	filterParams: any,
+) {
+	if (!headerValue) return true;
+
+	if (!rowValue) return false;
+
+	if (headerValue.match("^[a-zA-Z0-9]+$")) {
+		// presumably subdivision, do starts with after the dash
+		const search = headerValue.toLowerCase();
+		if (rowValue.split("-")[1].toLowerCase().startsWith(search)) {
+			return true;
+		}
+		return false;
+	}
+
+	return filterRegex(headerValue, rowValue, rowData, filterParams);
+}
+
 function filterRegex(
 	headerValue: string,
 	rowValue: string,
@@ -352,7 +374,7 @@ async function main() {
 			{
 				field: "code",
 				headerFilter: "input",
-				headerFilterFunc: filterRegex,
+				headerFilterFunc: codeFilter,
 				headerHozAlign: "center",
 				hozAlign: "center",
 				responsive: 0,
